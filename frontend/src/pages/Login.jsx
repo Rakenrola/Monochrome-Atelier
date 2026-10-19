@@ -1,8 +1,11 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { GoogleLogin } from '@react-oauth/google';
 
 export default function Login() {
   const navigate = useNavigate();
+  const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
   // Active Tab & Form States
   const [activeTab, setActiveTab] = useState('signin'); // 'signin' | 'create'
@@ -23,6 +26,47 @@ export default function Login() {
   const [resetError, setResetError] = useState('');
 
   const [errors, setErrors] = useState({});
+  const [authMessage, setAuthMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const saveAuthentication = (token, user) => {
+    if (typeof token !== 'string' || !user || typeof user.id !== 'number') {
+      throw new Error('The server returned an invalid authentication response.');
+    }
+
+    const storage = formData.staySignedIn ? window.localStorage : window.sessionStorage;
+    const otherStorage = formData.staySignedIn ? window.sessionStorage : window.localStorage;
+    otherStorage.removeItem('authToken');
+    otherStorage.removeItem('authUser');
+    storage.setItem('authToken', token);
+    storage.setItem('authUser', JSON.stringify(user));
+  };
+
+  const handleGoogleSuccess = async (response) => {
+    if (!response.credential) {
+      setAuthMessage('Google did not return an identity credential. Please try again.');
+      return;
+    }
+
+    setIsSubmitting(true);
+    setAuthMessage('');
+
+    try {
+      const result = await axios.post('/api/auth/google', {
+        credential: response.credential
+      });
+      saveAuthentication(result.data.token, result.data.user);
+      navigate('/');
+    } catch (error) {
+      setAuthMessage(
+        error.response?.data?.message ||
+          error.message ||
+          'Google sign-in failed. Please try again.'
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -46,25 +90,50 @@ export default function Login() {
 
     if (!formData.password) {
       newErrors.password = 'Password is required';
-    } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
+    } else if (formData.password.length < 8) {
+      newErrors.password = 'Password must be at least 8 characters';
+    } else if (new TextEncoder().encode(formData.password).length > 72) {
+      newErrors.password = 'Password must be no more than 72 bytes';
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
 
-    alert(
-      activeTab === 'signin'
-        ? `Signed in successfully as ${formData.email}`
-        : `Account created successfully for ${formData.fullName}`
-    );
+    setIsSubmitting(true);
+    setAuthMessage('');
 
-    navigate('/');
+    try {
+      const isCreatingAccount = activeTab === 'create';
+      const response = await axios.post(
+        isCreatingAccount ? '/api/auth/register' : '/api/auth/login',
+        isCreatingAccount
+          ? {
+              username: formData.fullName.trim(),
+              email: formData.email.trim(),
+              password: formData.password
+            }
+          : {
+              identifier: formData.email.trim(),
+              password: formData.password
+            }
+      );
+
+      saveAuthentication(response.data.token, response.data.user);
+      navigate('/');
+    } catch (error) {
+      setAuthMessage(
+        error.response?.data?.message ||
+          error.message ||
+          'Unable to sign in. Check your connection and try again.'
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // Forgot Password Submission Handler
@@ -120,6 +189,7 @@ export default function Login() {
             onClick={() => {
               setActiveTab('signin');
               setErrors({});
+              setAuthMessage('');
             }}
             style={{
               background: 'none',
@@ -143,6 +213,7 @@ export default function Login() {
             onClick={() => {
               setActiveTab('create');
               setErrors({});
+              setAuthMessage('');
             }}
             style={{
               background: 'none',
@@ -320,9 +391,16 @@ export default function Login() {
             )}
           </div>
 
+          {authMessage && (
+            <p role="alert" style={{ color: 'var(--text-primary)', fontSize: '0.75rem', lineHeight: '1.5' }}>
+              {authMessage}
+            </p>
+          )}
+
           {/* Submit Action */}
           <button
             type="submit"
+            disabled={isSubmitting}
             className="btn-tech"
             style={{
               width: '100%',
@@ -333,14 +411,19 @@ export default function Login() {
               fontSize: '0.8rem',
               fontWeight: '700',
               letterSpacing: '0.2em',
-              cursor: 'pointer',
+              cursor: isSubmitting ? 'wait' : 'pointer',
+              opacity: isSubmitting ? 0.7 : 1,
               textAlign: 'center',
               marginTop: '10px'
             }}
             onMouseOver={(e) => (e.target.style.backgroundColor = '#cccccc')}
             onMouseOut={(e) => (e.target.style.backgroundColor = 'var(--text-primary)')}
           >
-            {activeTab === 'signin' ? 'SIGN IN' : 'CREATE ACCOUNT'}
+            {isSubmitting
+              ? 'PLEASE WAIT...'
+              : activeTab === 'signin'
+                ? 'SIGN IN'
+                : 'CREATE ACCOUNT'}
           </button>
 
           {/* Divider */}
@@ -350,31 +433,41 @@ export default function Login() {
             <div style={{ flex: 1, height: '1px', backgroundColor: 'var(--border-dark)' }}></div>
           </div>
 
-          {/* Google SSO */}
-          <button
-            type="button"
-            className="btn-tech"
-            onClick={() => alert('Redirecting to Google Authentication...')}
-            style={{
-              width: '100%',
-              padding: '14px',
-              backgroundColor: 'transparent',
-              color: 'var(--text-primary)',
-              border: '1px solid var(--border-dark)',
-              fontSize: '0.75rem',
-              fontWeight: '600',
-              letterSpacing: '0.12em',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justify: 'center',
-              gap: '10px'
-            }}
-            onMouseOver={(e) => (e.target.style.borderColor = 'var(--text-primary)')}
-            onMouseOut={(e) => (e.target.style.borderColor = 'var(--border-dark)')}
-          >
-            <span style={{ fontWeight: 'bold' }}>G</span> CONTINUE WITH GOOGLE
-          </button>
+          {googleClientId ? (
+            <div style={{ display: 'flex', justifyContent: 'center', opacity: isSubmitting ? 0.6 : 1 }}>
+              <GoogleLogin
+                onSuccess={handleGoogleSuccess}
+                onError={() => setAuthMessage('Google sign-in was cancelled or could not be completed.')}
+                text="continue_with"
+                theme="outline"
+                shape="rectangular"
+                width="360"
+              />
+            </div>
+          ) : (
+            <button
+              type="button"
+              className="btn-tech"
+              onClick={() => setAuthMessage('Google sign-in is not configured. Set VITE_GOOGLE_CLIENT_ID and GOOGLE_CLIENT_ID.')}
+              style={{
+                width: '100%',
+                padding: '14px',
+                backgroundColor: 'transparent',
+                color: 'var(--text-primary)',
+                border: '1px solid var(--border-dark)',
+                fontSize: '0.75rem',
+                fontWeight: '600',
+                letterSpacing: '0.12em',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justify: 'center',
+                gap: '10px'
+              }}
+            >
+              <span style={{ fontWeight: 'bold' }}>G</span> CONTINUE WITH GOOGLE
+            </button>
+          )}
         </form>
       </div>
 

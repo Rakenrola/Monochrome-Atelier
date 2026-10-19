@@ -1,24 +1,116 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import { addToCart } from '../store/cartSlice';
-import mockProducts from '../data/mockProducts.json';
 
 export default function Home() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const [products, setProducts] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
 
   // Category State
   const [selectedCategory, setSelectedCategory] = useState('ALL');
 
+  useEffect(() => {
+    let active = true;
+    let isRequestInFlight = false;
+    let controller;
+    let refreshTimeout;
+
+    function scheduleRefresh() {
+      window.clearTimeout(refreshTimeout);
+      if (document.visibilityState === 'visible') {
+        refreshTimeout = window.setTimeout(refreshProducts, 2000);
+      }
+    }
+
+    async function refreshProducts() {
+      if (!active || isRequestInFlight) {
+        return;
+      }
+
+      if (document.visibilityState !== 'visible') {
+        scheduleRefresh();
+        return;
+      }
+
+      isRequestInFlight = true;
+      controller = new AbortController();
+      try {
+        const response = await axios.get('/api/products', {
+          signal: controller.signal,
+          headers: { 'Cache-Control': 'no-cache' }
+        });
+        if (!Array.isArray(response.data.products)) {
+          throw new Error('The server returned an invalid product list.');
+        }
+        setProducts((currentProducts) => {
+          const nextProducts = response.data.products;
+          const isUnchanged =
+            currentProducts.length === nextProducts.length &&
+            currentProducts.every((product, index) => {
+              const nextProduct = nextProducts[index];
+              return (
+                product.id === nextProduct.id &&
+                product.title === nextProduct.title &&
+                product.category === nextProduct.category &&
+                product.price === nextProduct.price &&
+                product.specs === nextProduct.specs &&
+                product.image === nextProduct.image
+              );
+            });
+
+          return isUnchanged ? currentProducts : nextProducts;
+        });
+        setLoadError('');
+      } catch (error) {
+        if (active && !controller.signal.aborted) {
+          setLoadError(
+            error.response?.data?.message ||
+              error.message ||
+              'Unable to load products. Check that the server and database are running.'
+          );
+        }
+      } finally {
+        isRequestInFlight = false;
+        if (active) {
+          setIsLoading(false);
+          scheduleRefresh();
+        }
+      }
+    }
+
+    function handleVisibilityChange() {
+      if (document.visibilityState === 'visible') {
+        window.clearTimeout(refreshTimeout);
+        refreshProducts();
+      } else {
+        window.clearTimeout(refreshTimeout);
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    refreshProducts();
+
+    return () => {
+      active = false;
+      window.clearTimeout(refreshTimeout);
+      controller?.abort();
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
+
   // Extract Categories Dynamically
-  const categories = ['ALL', ...new Set(mockProducts.map((p) => p.category || 'COMPONENTS'))];
+  const categories = ['ALL', ...new Set(products.map((p) => p.category || 'COMPONENTS'))];
 
   // Filter Products
   const filteredProducts =
     selectedCategory === 'ALL'
-      ? mockProducts
-      : mockProducts.filter((p) => p.category === selectedCategory);
+      ? products
+      : products.filter((p) => p.category === selectedCategory);
 
   const handleAddToCart = (product) => {
     dispatch(addToCart(product));
@@ -191,6 +283,15 @@ export default function Home() {
             gap: '40px 30px'
           }}
         >
+          {isLoading && <p role="status">Loading products...</p>}
+          {!isLoading && loadError && (
+            <p role="alert" style={{ color: 'var(--text-primary)' }}>
+              {loadError}
+            </p>
+          )}
+          {!isLoading && !loadError && filteredProducts.length === 0 && (
+            <p>No products are available in this category.</p>
+          )}
           {filteredProducts.map((product, index) => (
             <div
               key={product.id}

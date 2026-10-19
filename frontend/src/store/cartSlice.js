@@ -25,13 +25,12 @@ const cartSlice = createSlice({
       }
     },
 
-    // Update quantity (+1 or -1)
+    // Set item quantity, keeping at least one item in the cart
     updateQuantity: (state, action) => {
-      const { id, delta } = action.payload;
+      const { id, quantity } = action.payload;
       const item = state.items.find((i) => i.id === id);
-      if (item) {
-        const newQty = (item.quantity || 1) + delta;
-        item.quantity = newQty > 0 ? newQty : 1;
+      if (item && Number.isSafeInteger(quantity) && quantity > 0) {
+        item.quantity = quantity;
       }
     },
 
