@@ -1,0 +1,408 @@
+/* ========================================================================== */
+/* MONOCHROME ATELIER & HARDWARE                     */
+/* ========================================================================== */
+:root {
+  --bg-black: #000000;
+  --bg-card: #0a0a0a;
+  --bg-subtle: #121212;
+  --border-dark: #222222;
+  --border-light: #444444;
+  --text-primary: #ffffff;
+  --text-muted: #888888;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* ========================================================================== */
+/* CSS RESET & BASE STYLES                                                    */
+/* ========================================================================== */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  background-color: var(--bg-black);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  min-height: 100vh;
+  width: 100%;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+button, input, select, textarea {
+  font-family: inherit;
+  color: inherit;
+}
+
+/* Custom Scrollbar for Minimalist Aesthetics */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-black);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-dark);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-light);
+}
+
+/* ========================================================================== */
+/* ANIMATIONS & KEYFRAMES                                           */
+/* ========================================================================== */
+
+/* 1. Hero Zoom-Out Entrance with Soft Blur Illumination */
+@keyframes heroEntry {
+  0% {
+    opacity: 0;
+    transform: scale(1.06) translateY(12px);
+    filter: blur(4px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    filter: blur(0px);
+  }
+}
+
+.animate-hero-entry {
+  animation: heroEntry 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* 2. Staggered Lift & Fade-In for Grid Cards */
+@keyframes elevateFade {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-elevate {
+  animation: elevateFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* 3. Slide-Over Drawer Animation for Checkout Modal */
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeInBackdrop {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ========================================================================== */
+/* BACKGROUND PATTERNS & COMPONENT STYLES                                    */
+/* ========================================================================== */
+
+/* Industrial Tech Background with Centered Glow & Subtle Grid */
+.hero-tech-bg {
+  background-color: #030303;
+  background-image: 
+    radial-gradient(circle at 50% 40%, rgba(255, 255, 255, 0.06) 0%, transparent 60%),
+    linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 100% 100%, 40px 40px, 40px 40px;
+  position: relative;
+}
+
+/* Product Card Hover & Illumination */
+.hardware-card {
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.35s ease,
+              box-shadow 0.35s ease;
+}
+
+.hardware-card:hover {
+  transform: translateY(-6px);
+  border-color: rgba(255, 255, 255, 0.6) !important;
+  box-shadow: 0 12px 30px rgba(255, 255, 255, 0.05);
+}
+
+/* Image Expansion inside Card Container */
+.hardware-image {
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+              filter 0.5s ease;
+}
+
+.hardware-card:hover .hardware-image {
+  transform: scale(1.06);
+  filter: brightness(1.08);
+}
+
+/* Interactive Tactile Button Feedback */
+.btn-tech {
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-tech:active {
+  transform: scale(0.96) !important;
+}
+
+/* Hide Horizontal Scrollbars on Category Ribbon */
+.category-ribbon::-webkit-scrollbar {
+  display: none;
+}
+.category-ribbon {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* ========================================================================== */
+/* CHECKOUT MODAL & BACKDROP STYLES                                           */
+/* ========================================================================== */
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.82);
+  backdrop-filter: blur(8px);
+  z-index: 1000;
+  display: flex;
+  justify-content: flex-end;
+  animation: fadeInBackdrop 0.3s ease forwards;
+}
+
+.shipping-modal-content {
+  width: 100%;
+  max-width: 480px;
+  height: 100%;
+  background-color: var(--bg-card);
+  border-left: 1px solid var(--border-dark);
+  padding: 40px 30px;
+  overflow-y: auto;
+  animation: slideInRight 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ========================================================================== */
+/* RESPONSIVE MEDIA QUERIES                                                  */
+/* ========================================================================== */
+@media (max-width: 868px) {
+  .cart-grid-layout {
+    grid-template-columns: 1fr !important;
+    gap: 30px !important;
+  }
+
+  .shipping-modal-content {
+    max-width: 100%;
+  }
+
+  .cart-item-row {
+    grid-template-columns: 80px 1fr !important;
+  }
+
+  .cart-item-price-col {
+    grid-column: span 2;
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    border-top: 1px dashed var(--border-dark);
+    padding-top: 10px;
+  }
+}
+/* Industrial Hardware Background Container */
+.hero-hardware-banner {
+  position: relative;
+  width: 100%;
+  max-width: 1250px;
+  margin: 0 auto;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid var(--border-dark);
+  background-image: 
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0.85)),
+    url('https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=1600');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+}
+/* ========================================================================== */
+/* NAVBAR PURPOSEFUL ANIMATIONS & STYLES                                       */
+/* ========================================================================== */
+
+/* Smooth Slide-Down Entrance */
+@keyframes navbarSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-navbar-entry {
+  animation: navbarSlideDown 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Nav Link Subtle Glow and Hover Underline Expansion */
+.nav-link {
+  position: relative;
+  text-decoration: none;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  letter-spacing: 0.18em;
+  font-weight: 500;
+  transition: color 0.3s ease;
+  padding: 6px 0;
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0%;
+  height: 1px;
+  background-color: var(--text-primary);
+  transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.nav-link:hover {
+  color: var(--text-primary);
+}
+
+.nav-link:hover::after,
+.nav-link.active::after {
+  width: 100%;
+}
+
+.nav-link.active {
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+/* Cart Counter Badge Pulse Effect */
+@keyframes badgePulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.25);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.cart-count-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--text-primary);
+  color: #000000;
+  font-size: 0.65rem;
+  font-weight: 800;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  margin-left: 6px;
+  transition: transform 0.2s ease;
+}
+
+.cart-count-badge.has-items {
+  animation: badgePulse 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+/* Responsive Mobile Styles for Header Navigation */
+@media (max-width: 768px) {
+  .desktop-nav-links {
+    display: none !important;
+  }
+
+  .mobile-only-toggle {
+    display: flex !important;
+  }
+}
+/* ========================================================================== */
+/* MOBILE & TABLET RESPONSIVE OVERRIDES                                      */
+/* ========================================================================== */
+
+@media (max-width: 768px) {
+  /* 1. Hero Banner Scaling */
+  .hero-hardware-banner {
+    min-height: auto !important;
+    padding: 40px 16px !important;
+    border-radius: 12px !important;
+  }
+
+  /* 2. Category Ribbon Touch Scroll */
+  .category-ribbon {
+    gap: 20px !important;
+    justify-content: flex-start !important;
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .category-ribbon button {
+    font-size: 0.72rem !important;
+    letter-spacing: 0.12em !important;
+  }
+
+  /* 3. Product Grid Stack */
+  main#catalog > div {
+    grid-template-columns: 1fr !important; /* Stack product cards 1 per row */
+    gap: 20px !important;
+  }
+
+  .hardware-card {
+    padding: 14px !important;
+  }
+
+  /* 4. Cart Page Stack */
+  .cart-grid-layout {
+    grid-template-columns: 1fr !important; /* Stack items list above summary */
+    gap: 30px !important;
+  }
+
+  .cart-item-row {
+    grid-template-columns: 70px 1fr !important; /* Re-layout item rows */
+    gap: 12px !important;
+  }
+
+  .cart-item-price-col {
+    grid-column: span 2;
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    width: 100%;
+    border-top: 1px solid var(--border-dark);
+    padding-top: 10px;
+    margin-top: 6px;
+  }
+
+  /* 5. Slide-Over Checkout Drawer Full Width */
+  .shipping-modal-content {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 100vh !important;
+    border-radius: 0 !important;
+    padding: 24px 18px !important;
+  }
+}

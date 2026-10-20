@@ -1,0 +1,58 @@
+[
+  {
+    "id": 1,
+    "title": "DARKCORE RTX 4090 OC EDITION",
+    "category": "GPU",
+    "price": 1599,
+    "specs": "24GB GDDR6X | Triple Fan Thermal System",
+    "image": "https://images.unsplash.com/photo-1587202372775-e229f172b9d7?auto=format&fit=crop&q=80&w=800"
+  },
+  {
+    "id": 2,
+    "title": "NEBULA X870-A ATX MOTHERBOARD",
+    "category": "MOTHERBOARD",
+    "price": 380,
+    "specs": "PCIe 5.0 | Wi-Fi 7 | Stealth PCB",
+    "image": "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&q=80&w=800"
+  },
+  {
+    "id": 3,
+    "title": "TITAN OLED 34\" CURVED MONITOR",
+    "category": "MONITOR",
+    "price": 990,
+    "specs": "240Hz | 0.03ms GTG | UWQHD",
+    "image": "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?auto=format&fit=crop&q=80&w=800"
+  },
+  {
+    "id": 4,
+    "title": "SHADOWBLADE HEAVY ALUMINUM KEYBOARD",
+    "category": "PERIPHERALS",
+    "price": 185,
+    "specs": "CNC Anodized | Custom Magnetic Switches",
+    "image": "https://images.unsplash.com/photo-1587829741301-dc798b83add3?auto=format&fit=crop&q=80&w=800"
+  },
+  {
+    "id": 5,
+    "title": "SPECTRE 64GB DDR5 7200MHz RAM",
+    "category": "MEMORY",
+    "price": 240,
+    "specs": "2x32GB | Low Latency Matte Heatsink",
+    "image": "https://images.unsplash.com/photo-1562976540-1502c2145186?auto=format&fit=crop&q=80&w=800"
+  },
+  {
+    "id": 6,
+    "title": "OBSIDIAN ZERO-AIRFLOW MID TOWER",
+    "category": "CASES",
+    "price": 210,
+    "specs": "Dual Tempered Glass | Hidden Cable Routing",
+    "image": "https://images.unsplash.com/photo-1587202372634-32705e3bf49c?auto=format&fit=crop&q=80&w=800"
+  },
+  {
+    "id": 7,
+    "title": "METEOR 3 MID TOWER",
+    "category": "CASES",
+    "price": 110,
+    "specs": "Tempered Glass | Hidden Cable Routing",
+    "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRswljnh9wlOgt54ALtXpnv30PpC5kMH9Xgk9NLjmd6Tw&s=100"
+  }
+]
