@@ -5,6 +5,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import pool from "./db.js";
 import authRoutes from "./auth.js";
+import passwordResetRoutes from "./ResetPassword.js";
 import productRoutes from "./products.js";
 import customerRoutes from "./customers.js";
 import cartRoutes from "./cart.js";
@@ -30,6 +31,7 @@ app.use(
   })
 );
 app.use(express.json());
+app.use("/api/auth", passwordResetRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/customers", customerRoutes);

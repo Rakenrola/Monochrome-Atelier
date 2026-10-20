@@ -73,6 +73,19 @@ UPDATE users
 SET auth_provider = 'google'
 WHERE password IS NULL AND auth_provider = 'local';
 
+CREATE TABLE IF NOT EXISTS password_reset_tokens (
+  user_id BIGINT UNSIGNED NOT NULL,
+  token_hash CHAR(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  expires_at DATETIME NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (user_id),
+  UNIQUE KEY password_reset_token_hash_unique (token_hash),
+  KEY password_reset_token_expiry_index (expires_at),
+  CONSTRAINT password_reset_tokens_user_fk
+    FOREIGN KEY (user_id) REFERENCES users (id)
+    ON DELETE CASCADE
+) ENGINE=InnoDB;
+
 CREATE TABLE IF NOT EXISTS products (
   id INT UNSIGNED NOT NULL AUTO_INCREMENT,
   title VARCHAR(160) NOT NULL,

@@ -27,6 +27,7 @@ export default function Login() {
   const [resetEmail, setResetEmail] = useState('');
   const [resetSubmitted, setResetSubmitted] = useState(false);
   const [resetError, setResetError] = useState('');
+  const [isResetSubmitting, setIsResetSubmitting] = useState(false);
 
   const [errors, setErrors] = useState({});
   const [authMessage, setAuthMessage] = useState('');
@@ -143,7 +144,7 @@ export default function Login() {
   };
 
   // Forgot Password Submission Handler
-  const handleResetPasswordSubmit = (e) => {
+  const handleResetPasswordSubmit = async (e) => {
     e.preventDefault();
     if (!resetEmail.trim() || !/\S+@\S+\.\S+/.test(resetEmail)) {
       setResetError('Please enter a valid email address.');
@@ -151,7 +152,21 @@ export default function Login() {
     }
 
     setResetError('');
-    setResetSubmitted(true);
+    setIsResetSubmitting(true);
+    try {
+      await axios.post('/api/auth/forgot-password', {
+        email: resetEmail.trim()
+      });
+      setResetSubmitted(true);
+    } catch (error) {
+      setResetError(
+        error.response?.data?.message ||
+          error.message ||
+          'Unable to request a password reset. Please try again.'
+      );
+    } finally {
+      setIsResetSubmitting(false);
+    }
   };
 
   return (
@@ -498,7 +513,7 @@ export default function Login() {
                   RECOVERY LINK DISPATCHED
                 </p>
                 <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', lineHeight: '1.6', marginBottom: '30px' }}>
-                  We have sent instructions to <strong>{resetEmail}</strong> to reset your hardware account credentials.
+                  If an account exists for that email, reset instructions will arrive shortly. Check your inbox and spam folder.
                 </p>
                 <button
                   type="button"
@@ -554,6 +569,7 @@ export default function Login() {
 
                 <button
                   type="submit"
+                  disabled={isResetSubmitting}
                   className="btn-tech"
                   style={{
                     width: '100%',
@@ -564,13 +580,14 @@ export default function Login() {
                     fontSize: '0.8rem',
                     fontWeight: '700',
                     letterSpacing: '0.2em',
-                    cursor: 'pointer',
+                    cursor: isResetSubmitting ? 'wait' : 'pointer',
+                    opacity: isResetSubmitting ? 0.7 : 1,
                     marginTop: '15px'
                   }}
                   onMouseOver={(e) => (e.target.style.backgroundColor = '#cccccc')}
                   onMouseOut={(e) => (e.target.style.backgroundColor = 'var(--text-primary)')}
                 >
-                  SEND RESET LINK
+                  {isResetSubmitting ? 'SENDING...' : 'SEND RESET LINK'}
                 </button>
               </form>
             )}

@@ -50,10 +50,16 @@ DB_SSL=true
 JWT_SECRET=<long randomly generated secret>
 GOOGLE_CLIENT_ID=<Google OAuth client ID>
 CORS_ORIGIN=<deployed Vercel site origin>
+FRONTEND_URL=<deployed Vercel site URL>
+GMAIL_USER=<Gmail sender address>
+GMAIL_APP_PASSWORD=<Google app password>
 ```
 
 Use a dedicated TiDB database user with only the permissions the application
 needs, rather than a cluster root user. Keep `.env` files out of Git.
+`FRONTEND_URL` is used to build password-reset links and must be the frontend's
+HTTPS origin in production. `GMAIL_USER` and `GMAIL_APP_PASSWORD` are used only
+by the backend to send reset emails.
 
 Deploy the `frontend/` folder separately on Vercel. Set its `VITE_API_BASE_URL`
 environment variable to the deployed API's origin (for example,
@@ -68,6 +74,29 @@ development through Vite's proxy; the production API base URL is supplied by
 Rotate any database password or JWT secret that has been shared publicly
 before deploying. Changing `JWT_SECRET` invalidates existing login tokens, so
 users will need to sign in again.
+
+## Gmail password reset setup
+
+The login page sends reset requests to the API. The API creates a random,
+single-use token, stores only its SHA-256 hash in `password_reset_tokens`, and
+sends a link that expires after 30 minutes. Run the updated `schema.sql` against
+TiDB before deploying the backend; it creates this table if it does not exist.
+
+For Gmail SMTP, enable 2-Step Verification on the sender Google account and
+create an App Password in that account's security settings. Set these
+environment variables on the **backend** deployment only:
+
+```text
+GMAIL_USER=<sender Gmail address>
+GMAIL_APP_PASSWORD=<Google-generated app password>
+FRONTEND_URL=https://monochrome-atelier.vercel.app
+```
+
+Use the actual frontend origin for `FRONTEND_URL`, with no trailing path. Keep
+the app password out of GitHub and out of all `VITE_` frontend variables. The
+reset link opens `/reset-password` on the frontend; users enter and confirm a
+new password there. Unknown email addresses receive the same success message
+as registered addresses.
 
 ## Cart and account behavior
 

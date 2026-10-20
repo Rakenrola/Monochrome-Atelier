@@ -9,6 +9,7 @@ import Login from './pages/Login';
 import Account from './pages/Account';
 import AdminDashboard from './pages/AdminDashboard';
 import Receipt from './pages/Receipt';
+import ResetPassword from './pages/ResetPassword';
 import { replaceCart } from './store/cartSlice';
 
 function HomeRoute() {
@@ -135,6 +136,7 @@ export default function App() {
         <Route path="/account" element={<Account />} />
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/receipt" element={<Receipt />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
       </Routes>
     </Router>
   );
