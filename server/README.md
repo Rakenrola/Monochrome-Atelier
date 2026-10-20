@@ -30,7 +30,44 @@ npm run dev
 ```
 
 The API listens on port `5000` by default. `GET /api/test-db` checks that the
-server can reach the configured database.
+server can reach the configured database. For TiDB Cloud, set `DB_SSL=true`;
+the server verifies TLS with `isrgrootx1.pem`. For local MySQL without TLS,
+set `DB_SSL=false`.
+
+## Production deployment
+
+Deploy this Express API as a Node web service (for example, a Render web
+service) with the repository root directory set to `server`, build command
+`npm install`, and start command `npm start`. Add these values in the API
+host's environment settings; do not commit production credentials:
+
+```text
+DB_HOST=<TiDB Cloud host>
+DB_USER=<application database user>
+DB_PASSWORD=<rotated database password>
+DB_NAME=sheesh_inventory
+DB_SSL=true
+JWT_SECRET=<long randomly generated secret>
+GOOGLE_CLIENT_ID=<Google OAuth client ID>
+CORS_ORIGIN=<deployed Vercel site origin>
+```
+
+Use a dedicated TiDB database user with only the permissions the application
+needs, rather than a cluster root user. Keep `.env` files out of Git.
+
+Deploy the `frontend/` folder separately on Vercel. Set its `VITE_API_BASE_URL`
+environment variable to the deployed API's origin (for example,
+`https://your-api.example.com`) and set `VITE_GOOGLE_CLIENT_ID` to the same
+Google OAuth client ID as the API. Vite embeds `VITE_` values at build time, so
+redeploy the frontend after changing them. Add the deployed Vercel site origin
+to the OAuth client's authorized JavaScript origins. Set `CORS_ORIGIN` on the
+API to that exact origin. The frontend uses relative `/api` requests in local
+development through Vite's proxy; the production API base URL is supplied by
+`VITE_API_BASE_URL`.
+
+Rotate any database password or JWT secret that has been shared publicly
+before deploying. Changing `JWT_SECRET` invalidates existing login tokens, so
+users will need to sign in again.
 
 ## Cart and account behavior
 
@@ -43,9 +80,9 @@ user's bearer token. Subsequent cart changes are saved through `PUT /api/cart`.
 The merge keeps the greater quantity for a product already present in both
 carts, which makes retrying a failed synchronization safe.
 
-The frontend blocks checkout until the visitor signs in or registers. The
-current checkout UI is still a prototype: submitting it displays a confirmation
-and clears the cart; it does not create an order or process a payment.
+The frontend blocks checkout until the visitor signs in or registers. Checkout
+currently generates a client-side receipt; it does not create a persisted order
+or process a payment.
 
 ## 3. Start the store app
 
