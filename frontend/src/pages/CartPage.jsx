@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   removeFromCart,
   updateQuantity,
@@ -9,7 +9,9 @@ import {
 
 export default function Cart() {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const cartItems = useSelector((state) => state.cart?.items || []);
+  const user = useSelector((state) => state.auth?.user);
 
   // Checkout Modal State
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
@@ -45,6 +47,11 @@ export default function Cart() {
 
   const handlePlaceOrder = (e) => {
     e.preventDefault();
+    if (!user) {
+      setIsCheckoutOpen(false);
+      return;
+    }
+
     const errors = {};
 
     if (!shippingData.fullName.trim()) errors.fullName = 'REQUIRED';
@@ -66,9 +73,36 @@ export default function Cart() {
       return;
     }
 
-    alert(`ORDER PLACED SUCCESSFULLY ($${grandTotal.toLocaleString()})\nDispatch notification sent to ${shippingData.fullName}.`);
+    const orderDate = new Date();
+    const receipt = {
+      orderNumber: `GG-${orderDate.getTime()}`,
+      createdAt: orderDate.toISOString(),
+      user: {
+        username: user.username,
+        email: user.email
+      },
+      shipping: {
+        fullName: shippingData.fullName.trim(),
+        address: shippingData.address.trim(),
+        city: shippingData.city.trim(),
+        postalCode: shippingData.postalCode.trim(),
+        country: shippingData.country.trim()
+      },
+      items: cartItems.map((item) => ({
+        id: item.id,
+        title: item.title,
+        category: item.category,
+        price: Number(item.price),
+        quantity: item.quantity || 1
+      })),
+      subtotal,
+      shippingFee,
+      grandTotal
+    };
+
     dispatch(clearCart());
     setIsCheckoutOpen(false);
+    navigate('/receipt', { state: { receipt } });
   };
 
   // Reusable input styling for ultra high visibility
@@ -385,23 +419,47 @@ export default function Cart() {
               <button
                 type="button"
                 className="btn-tech"
-                onClick={() => setIsCheckoutOpen(true)}
+                disabled={!user}
+                onClick={() => {
+                  if (user) setIsCheckoutOpen(true);
+                }}
                 style={{
                   width: '100%',
                   padding: '16px',
-                  backgroundColor: 'var(--text-primary)',
-                  color: '#000000',
+                  backgroundColor: user ? 'var(--text-primary)' : '#555555',
+                  color: user ? '#000000' : '#bbbbbb',
                   border: 'none',
                   fontSize: '0.78rem',
                   fontWeight: '700',
                   letterSpacing: '0.22em',
-                  cursor: 'pointer'
+                  cursor: user ? 'pointer' : 'not-allowed'
                 }}
-                onMouseOver={(e) => (e.target.style.backgroundColor = '#cccccc')}
-                onMouseOut={(e) => (e.target.style.backgroundColor = 'var(--text-primary)')}
+                onMouseOver={(e) => {
+                  if (user) e.target.style.backgroundColor = '#cccccc';
+                }}
+                onMouseOut={(e) => {
+                  if (user) e.target.style.backgroundColor = 'var(--text-primary)';
+                }}
               >
                 PROCEED TO CHECKOUT
               </button>
+              {!user && (
+                <p
+                  style={{
+                    marginTop: '14px',
+                    fontSize: '0.72rem',
+                    lineHeight: 1.6,
+                    color: 'var(--text-muted)',
+                    textAlign: 'center'
+                  }}
+                >
+                  Sign in or create an account to continue. Your cart will be kept.
+                  {' '}
+                  <Link to="/login" style={{ color: 'var(--text-primary)' }}>
+                    SIGN IN / REGISTER
+                  </Link>
+                </p>
+              )}
             </div>
           </div>
         )}

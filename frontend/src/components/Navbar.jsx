@@ -19,6 +19,8 @@ export default function Navbar() {
 
   // Read live cart badge count
   const cartItems = useSelector((state) => state.cart?.items || []);
+  const user = useSelector((state) => state.auth?.user);
+  const isAdmin = user?.role === 'admin';
   const totalCartCount = cartItems.reduce(
     (total, item) => total + (item.quantity || 1),
     0
@@ -101,7 +103,7 @@ export default function Navbar() {
         </div>
 
         {/* 2. CENTER SECTION: DESKTOP CATEGORY LINKS */}
-        {!isMobile && (
+        {!isMobile && !isAdmin && (
           <div
             style={{
               display: 'flex',
@@ -140,30 +142,56 @@ export default function Navbar() {
             gap: isMobile ? '14px' : '22px'
           }}
         >
+          {user && (
+            <span
+              style={{
+                color: 'var(--text-muted)',
+                fontSize: '0.68rem',
+                letterSpacing: '0.08em',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                maxWidth: isMobile ? '80px' : '140px', // Truncates with "..." if username is too long
+                display: 'inline-block'
+              }}
+              title={`Signed in as ${user.username}`}
+            >
+              HI, {user.username}
+            </span>
+          )}
           <Link
-            to="/login"
-            className={`nav-link ${location.pathname === '/login' ? 'active' : ''}`}
+            to={user ? (user.role === 'admin' ? '/admin' : '/account') : '/login'}
+            className={`nav-link ${
+              (user &&
+                location.pathname ===
+                  (user.role === 'admin' ? '/admin' : '/account')) ||
+              (!user && location.pathname === '/login')
+                ? 'active'
+                : ''
+            }`}
             style={{ fontSize: '0.72rem' }}
           >
-            ACCOUNT
+            {user?.role === 'admin' ? 'ADMIN' : user ? 'ACCOUNT' : 'SIGN IN'}
           </Link>
 
-          <Link
-            to="/cart"
-            className={`nav-link ${location.pathname === '/cart' ? 'active' : ''}`}
-            style={{ display: 'flex', alignItems: 'center', fontSize: '0.72rem' }}
-          >
-            CART
-            <span
-              key={totalCartCount}
-              className={`cart-count-badge ${totalCartCount > 0 ? 'has-items' : ''}`}
+          {!isAdmin && (
+            <Link
+              to="/cart"
+              className={`nav-link ${location.pathname === '/cart' ? 'active' : ''}`}
+              style={{ display: 'flex', alignItems: 'center', fontSize: '0.72rem' }}
             >
-              {totalCartCount}
-            </span>
-          </Link>
+              CART
+              <span
+                key={totalCartCount}
+                className={`cart-count-badge ${totalCartCount > 0 ? 'has-items' : ''}`}
+              >
+                {totalCartCount}
+              </span>
+            </Link>
+          )}
 
           {/* 3-LINE HAMBURGER TOGGLE (Mobile Only) */}
-          {isMobile && (
+          {isMobile && !isAdmin && (
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -187,7 +215,7 @@ export default function Navbar() {
       </nav>
 
       {/* MOBILE COLLAPSIBLE DRAWER */}
-      {isMobile && mobileMenuOpen && (
+      {isMobile && !isAdmin && mobileMenuOpen && (
         <div
           className="animate-elevate"
           style={{

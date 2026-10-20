@@ -1,9 +1,12 @@
 import { useState } from 'react';
+import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { GoogleLogin } from '@react-oauth/google';
+import { setAuth } from '../store/authSlice';
 
 export default function Login() {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
@@ -40,7 +43,10 @@ export default function Login() {
     otherStorage.removeItem('authUser');
     storage.setItem('authToken', token);
     storage.setItem('authUser', JSON.stringify(user));
+    dispatch(setAuth({ token, user }));
   };
+
+  const getHomePath = (user) => (user.role === 'admin' ? '/admin' : '/');
 
   const handleGoogleSuccess = async (response) => {
     if (!response.credential) {
@@ -56,7 +62,7 @@ export default function Login() {
         credential: response.credential
       });
       saveAuthentication(result.data.token, result.data.user);
-      navigate('/');
+      navigate(getHomePath(result.data.user));
     } catch (error) {
       setAuthMessage(
         error.response?.data?.message ||
@@ -124,7 +130,7 @@ export default function Login() {
       );
 
       saveAuthentication(response.data.token, response.data.user);
-      navigate('/');
+      navigate(getHomePath(response.data.user));
     } catch (error) {
       setAuthMessage(
         error.response?.data?.message ||

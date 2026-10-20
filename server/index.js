@@ -7,6 +7,7 @@ import pool from "./db.js";
 import authRoutes from "./auth.js";
 import productRoutes from "./products.js";
 import customerRoutes from "./customers.js";
+import cartRoutes from "./cart.js";
 
 dotenv.config();
 
@@ -17,6 +18,7 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/customers", customerRoutes);
+app.use("/api/cart", cartRoutes);
 
 app.get("/", (req, res) => {
   res.send("Sheesh server is running!");

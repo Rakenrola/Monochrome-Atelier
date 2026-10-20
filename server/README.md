@@ -32,6 +32,21 @@ npm run dev
 The API listens on port `5000` by default. `GET /api/test-db` checks that the
 server can reach the configured database.
 
+## Cart and account behavior
+
+Guests can add items to a browser-local cart. The `cart_items.id` column is the
+auto-generated primary key for a cart row and is never `NULL`; guest items are
+not inserted into MySQL before sign-in. After registration or login, the API
+merges the browser cart with the user's database cart. A user's cart is linked
+through `carts.user_id`, then `cart_items.cart_id`; cart endpoints require the
+user's bearer token. Subsequent cart changes are saved through `PUT /api/cart`.
+The merge keeps the greater quantity for a product already present in both
+carts, which makes retrying a failed synchronization safe.
+
+The frontend blocks checkout until the visitor signs in or registers. The
+current checkout UI is still a prototype: submitting it displays a confirmation
+and clears the cart; it does not create an order or process a payment.
+
 ## 3. Start the store app
 
 In a separate terminal:

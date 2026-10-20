@@ -4,7 +4,7 @@ import { requireAdmin } from "./middleware/requireAdmin.js";
 
 const router = express.Router();
 const productFields = ["title", "category", "price", "specs", "image"];
-const productResponseFields = ["id", ...productFields];
+const productResponseFields = ["id", ...productFields, "created_at", "updated_at"];
 
 router.use((req, res, next) => {
   res.set("Cache-Control", "no-store");

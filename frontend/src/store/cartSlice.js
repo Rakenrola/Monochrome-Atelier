@@ -1,9 +1,27 @@
 import { createSlice } from '@reduxjs/toolkit';
 
+function loadSavedCart() {
+  if (typeof window === 'undefined') return [];
+
+  const savedCart = window.localStorage.getItem('cartItems');
+  if (!savedCart) return [];
+
+  try {
+    const items = JSON.parse(savedCart);
+    return Array.isArray(items) ? items : [];
+  } catch (error) {
+    if (error instanceof SyntaxError) {
+      window.localStorage.removeItem('cartItems');
+      return [];
+    }
+    throw error;
+  }
+}
+
 const cartSlice = createSlice({
   name: 'cart',
   initialState: {
-    items: []
+    items: loadSavedCart()
   },
   reducers: {
     // Add item to cart or increment quantity if it already exists
@@ -43,9 +61,19 @@ const cartSlice = createSlice({
     // Clear cart after checkout
     clearCart: (state) => {
       state.items = [];
+    },
+
+    replaceCart: (state, action) => {
+      state.items = action.payload;
     }
   }
 });
 
-export const { addToCart, updateQuantity, removeFromCart, clearCart } = cartSlice.actions;
+export const {
+  addToCart,
+  updateQuantity,
+  removeFromCart,
+  clearCart,
+  replaceCart
+} = cartSlice.actions;
 export default cartSlice.reducer;

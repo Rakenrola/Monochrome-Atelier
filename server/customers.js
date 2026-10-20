@@ -56,7 +56,7 @@ router.use(requireAdmin);
 router.get("/", async (req, res, next) => {
   try {
     const [customers] = await pool.execute(
-      `SELECT id, username, email, role, created_at
+      `SELECT id, username, email, auth_provider, role, created_at
        FROM users
        WHERE role = 'customer'
        ORDER BY id`
@@ -79,7 +79,7 @@ router.get("/:id", async (req, res, next) => {
 
   try {
     const [customers] = await pool.execute(
-      `SELECT id, username, email, role, created_at
+      `SELECT id, username, email, auth_provider, role, created_at
        FROM users
        WHERE id = ? AND role = 'customer'`,
       [id]
@@ -114,7 +114,7 @@ router.post("/", async (req, res, next) => {
       [normalizedUsername, normalizedEmail, hashedPassword]
     );
     const [customers] = await pool.execute(
-      `SELECT id, username, email, role, created_at
+      `SELECT id, username, email, auth_provider, role, created_at
        FROM users
        WHERE id = ? AND role = 'customer'`,
       [result.insertId]
@@ -212,7 +212,7 @@ router.put("/:id", async (req, res, next) => {
     }
 
     const [customers] = await pool.execute(
-      `SELECT id, username, email, role, created_at
+      `SELECT id, username, email, auth_provider, role, created_at
        FROM users
        WHERE id = ? AND role = 'customer'`,
       [id]
